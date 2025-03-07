@@ -10,6 +10,8 @@
 #ifndef IS_FXSERVER
 #include <Pool.h>
 #include <Streaming.h>
+#else
+#include <ScriptEngine.h>
 #endif
 
 #include <iomanip>
@@ -787,6 +789,15 @@ static InitFunction initFunction([]()
 			ImGui::End();
 		}
 	});
+
+#ifdef IS_FXSERVER
+	fx::ScriptEngine::RegisterNativeHandler("GET_RESOURCE_MONITOR_DATA", [](fx::ScriptContext& context) {
+		std::shared_lock _(gResourceMonitorMutex);
+		auto& data = gResourceMonitor->GetResourceDatas();
+	
+		context.SetResult(data);
+	});
+#endif
 
 #ifndef IS_FXSERVER
 	static ConVar<bool> poolVar("net_showPools", ConVar_Archive | ConVar_UserPref, false, &m_enabledPools);
